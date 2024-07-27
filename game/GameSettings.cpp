@@ -54,6 +54,7 @@ bool GameSettings::ReadSettings()
 	/*Doing Explicitly for now. Should be more generic*/
 	_videoSettings.setScreenWidth(root["Video Settings"]["Resolution X"].asInt());
 	_videoSettings.setScreenHeight(root["Video Settings"]["Resolution Y"].asInt());
+	_videoSettings.initScreenMode(static_cast<ScreenMode>(root["Video Settings"]["Screen Mode"].asInt()));
 	_soundSettings._setMaster(root["Sound Settings"]["Master Volume"].asFloat());
 	_matchSettings.setRoundCount(root["Match Settings"]["Round Number"].asInt());
 	_matchSettings.setRoundTime(root["Match Settings"]["Round Time"].asFloat());

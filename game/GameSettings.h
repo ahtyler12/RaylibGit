@@ -79,51 +79,44 @@ struct VideoSettings
 {
 	int _screenWidth = 800;
 	int _screenHeight = 600;
-	ScreenMode screenMode = BORDERLESS;
+	ScreenMode screenMode = WINDOWED;
 
 	void initVideo()
 	{
-		switch (screenMode)
-		{
-		case WINDOWED:
-			SetConfigFlags(FLAG_MSAA_4X_HINT);
-			break;
-		case BORDERLESS:
-			SetConfigFlags(FLAG_BORDERLESS_WINDOWED_MODE);
-			break;
-		case FULLSCREEN:
-			SetConfigFlags(FLAG_FULLSCREEN_MODE);
-			break;
-		default:
-			break;
-		}
-		
 		InitWindow(_screenWidth, _screenHeight, "My first RAYLIB program!");
+		updateScreenMode(screenMode);
 
 	}
 
-	void setScreenMode(ScreenMode _newMode)
+	void initScreenMode(ScreenMode _newMode)
 	{
-		switch (screenMode)
+		screenMode = _newMode;
+	}
+
+	void updateScreenMode(ScreenMode _newMode)
+	{
+		switch (_newMode)
 		{
 		case WINDOWED:
-			if (IsWindowFullscreen)
-			{
-				ToggleFullscreen();//Not sure if I need to call this but just in case
-			}		
+			std::cout << "Starting in Windowed Mode!\n";
+			//if (IsWindowFullscreen)
+			//{
+			//	ToggleFullscreen();//Not sure if I need to call this but just in case
+			//}		
 			SetConfigFlags(FLAG_MSAA_4X_HINT);
 			break;
 		case BORDERLESS:
+			std::cout << "Starting in Borderless Windowed Mode!\n";
 			ToggleBorderlessWindowed();
 			break;
 		case FULLSCREEN:
+			std::cout << "Starting in Fullscreen Mode!\n";
 			ToggleFullscreen();
 			break;
 		default:
 			break;
 		}
-		
-
+		screenMode = _newMode;
 	}
 
 	ScreenMode getScreenMode()
