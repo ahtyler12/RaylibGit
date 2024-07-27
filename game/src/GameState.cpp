@@ -2,9 +2,11 @@
 
 GameState::GameState()
 {
-    playerData.LoadData();
+   _gameSettings.ReadSettings();
+   _playerData.LoadData();
 }
 GameState::~GameState()
 {
-    playerData.SaveData();
+    _playerData.SaveData();
+    _gameSettings.WriteSettings();
 }

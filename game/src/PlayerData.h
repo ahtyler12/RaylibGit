@@ -9,26 +9,27 @@ struct PlayerData
 {
     std::string playerName = "Kupo";
 
-    private:
-    std::string fileName = "PlayerData.txt";
+private:
+    std::string fileName = "./resources/PlayerData.json"; //Set as Private so that nothing can modify the location of this. Maybe should be protected instead but I'll keep for now
 public:
     void LoadData()
     {       
         Json::Value pData;
         Json::Reader reader;
-        std::ifstream pFile("PlayerData.json", std::ifstream::binary);
+        std::ifstream pFile(fileName, std::ifstream::binary);
         reader.parse(pFile, pData);
-        std::cout << pData;
-
+        playerName = pData["Player Name"].asString();
         pFile.close();
     }
 
     void SaveData()
     {
-        std::ofstream pFile("PlayerData.json");
+        std::ofstream pFile(fileName);
         Json::Value pData;
         Json::StreamWriterBuilder builder;
         std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+        pData["Player Name"] = playerName;
+
         writer->write(pData, &pFile);
         pFile.close();
 

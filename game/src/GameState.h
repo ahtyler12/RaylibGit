@@ -1,5 +1,6 @@
 #include "EntityManager.h"
 #include "PlayerData.h"
+#include "GameSettings.h"
 #pragma once
 
 class GameState
@@ -9,8 +10,8 @@ class GameState
     ~GameState();
 
     private:
-    PlayerData playerData;
-
+    PlayerData _playerData;
+    GameSettings _gameSettings;
 };
 
 /*

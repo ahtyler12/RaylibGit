@@ -1,0 +1,17 @@
+{
+	"Match Settings" : 
+	{
+		"Round Number" : 3,
+		"Round Time" : 99.0
+	},
+	"Sound Settings" : 
+	{
+		"Master Volume" : 1.0
+	},
+	"Video Settings" : 
+	{
+		"Resolution X" : 800,
+		"Resolution Y" : 600,
+		"Screen Mode" : 1
+	}
+}

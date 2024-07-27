@@ -60,6 +60,9 @@
     <ClInclude Include="..\jsoncpp\include\json\writer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameSettings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entity.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
