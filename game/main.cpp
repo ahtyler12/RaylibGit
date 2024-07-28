@@ -4,12 +4,8 @@
 
 int main(void)
 {
-    //const int screenWidth = 800;
-    //const int screenHeight = 600;
-    //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    //InitWindow(screenWidth, screenHeight, "My first RAYLIB program!");
-    SetTargetFPS(60);
-	GameState gs = GameState();
+    SetTargetFPS(60); //This should never change
+	std::shared_ptr<GameState> gs = std::make_shared<GameState>(); //Using Shared pointer to make memory management easier
 
     while (!WindowShouldClose())
     {
@@ -19,6 +15,7 @@ int main(void)
         EndDrawing();
     }
 
+    
     CloseWindow();
 	return 0;
 }

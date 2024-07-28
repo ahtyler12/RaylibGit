@@ -1,17 +1,17 @@
 {
 	"Match Settings" : 
 	{
-		"Round Number" : 3,
-		"Round Time" : 99.0
+		"Round Number" : 0,
+		"Round Time" : 0.0
 	},
 	"Sound Settings" : 
 	{
-		"Master Volume" : 1.0
+		"Master Volume" : 0.0
 	},
 	"Video Settings" : 
 	{
-		"Resolution X" : 800,
-		"Resolution Y" : 600,
-		"Screen Mode" : 1
+		"Resolution X" : 0,
+		"Resolution Y" : 0,
+		"Screen Mode" : 0
 	}
 }

@@ -8,7 +8,7 @@ GameSettings::GameSettings()
 	_videoSettings = {};
 
 	ReadSettings();
-	_videoSettings.initVideo();
+	_videoSettings.InitVideo();
 }
 
 GameSettings::~GameSettings()
@@ -25,14 +25,14 @@ void GameSettings::WriteSettings()
 	Json::StreamWriterBuilder builder;
 	const std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 
-	Video["Resolution X"] = _videoSettings.getScreenWidth(); //Gives 0 for some reason
-	Video["Resolution Y"] = _videoSettings.getScreenHeight();
-	Video["Screen Mode"] = _videoSettings.getScreenMode(); 
+	Video["Resolution X"] = _videoSettings.GetScreenWidth(); 
+	Video["Resolution Y"] = _videoSettings.GetScreenHeight();
+	Video["Screen Mode"] = _videoSettings.GetScreenMode(); 
 
-	Sound["Master Volume"] = _soundSettings._getMasterVolume();
+	Sound["Master Volume"] = _soundSettings.GetMaster();
 
-	Match["Round Number"] = _matchSettings.getRoundCount();
-	Match["Round Time"] = _matchSettings.getRoundTime();
+	Match["Round Number"] = _matchSettings.GetRoundCount();
+	Match["Round Time"] = _matchSettings.GetRoundTime();
 
 	root["Video Settings"] = Video;
 	root["Sound Settings"] = Sound;
@@ -52,11 +52,11 @@ bool GameSettings::ReadSettings()
 	builder.parse(input, root);
 
 	/*Doing Explicitly for now. Should be more generic*/
-	_videoSettings.setScreenWidth(root["Video Settings"]["Resolution X"].asInt());
-	_videoSettings.setScreenHeight(root["Video Settings"]["Resolution Y"].asInt());
-	_videoSettings.initScreenMode(static_cast<ScreenMode>(root["Video Settings"]["Screen Mode"].asInt()));
-	_soundSettings._setMaster(root["Sound Settings"]["Master Volume"].asFloat());
-	_matchSettings.setRoundCount(root["Match Settings"]["Round Number"].asInt());
-	_matchSettings.setRoundTime(root["Match Settings"]["Round Time"].asFloat());
+	_videoSettings.SetScreenWidth(root["Video Settings"]["Resolution X"].asInt());
+	_videoSettings.SetScreenHeight(root["Video Settings"]["Resolution Y"].asInt());
+	_videoSettings.InitScreenMode(static_cast<ScreenMode>(root["Video Settings"]["Screen Mode"].asInt()));
+	_soundSettings.SetMaster(root["Sound Settings"]["Master Volume"].asFloat());
+	_matchSettings.SetRoundCount(root["Match Settings"]["Round Number"].asInt());
+	_matchSettings.SetRoundTime(root["Match Settings"]["Round Time"].asFloat());
 	return true;
 }

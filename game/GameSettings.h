@@ -11,12 +11,12 @@ struct SoundSettings
 private:
 	float masterVolume = 1.f; //Pulled from settings file and adjusted through settings menu
 public:
-	float _getMasterVolume()
+	float GetMaster()
 	{
 		return GetMasterVolume(); //could use variable but since these should match anyway this should be fine
 	}
 
-	void _setMaster(float _masterVolume)
+	void SetMaster(float _masterVolume)
 	{
 		SetMasterVolume(_masterVolume);
 		masterVolume = _masterVolume;
@@ -35,21 +35,21 @@ private:
 	int numRounds = 2;
 	float roundTime = 99.f;
 public:
-	void setRoundCount(int _newRounds)
+	void SetRoundCount(int _newRounds)
 	{
 		numRounds = _newRounds;
 	}
-	void setRoundTime(float _newTime)
+	void SetRoundTime(float _newTime)
 	{
 		roundTime = _newTime;
 	}
 
-	int getRoundCount()
+	int GetRoundCount()
 	{
 		return numRounds;
 	}
 
-	float getRoundTime()
+	float GetRoundTime()
 	{
 		return roundTime;
 	}
@@ -81,28 +81,28 @@ struct VideoSettings
 	int _screenHeight = 600;
 	ScreenMode screenMode = WINDOWED;
 
-	void initVideo()
+	void InitVideo()
 	{
 		InitWindow(_screenWidth, _screenHeight, "My first RAYLIB program!");
-		updateScreenMode(screenMode);
+		UpdateScreenMode(screenMode);
 
 	}
 
-	void initScreenMode(ScreenMode _newMode)
+	void InitScreenMode(ScreenMode _newMode)
 	{
 		screenMode = _newMode;
 	}
 
-	void updateScreenMode(ScreenMode _newMode)
+	void UpdateScreenMode(ScreenMode _newMode)
 	{
 		switch (_newMode)
 		{
 		case WINDOWED:
 			std::cout << "Starting in Windowed Mode!\n";
-			//if (IsWindowFullscreen)
-			//{
-			//	ToggleFullscreen();//Not sure if I need to call this but just in case
-			//}		
+			if (IsWindowFullscreen())
+			{
+				ToggleFullscreen();//Not sure if I need to call this but just in case
+			}		
 			SetConfigFlags(FLAG_MSAA_4X_HINT);
 			break;
 		case BORDERLESS:
@@ -119,27 +119,27 @@ struct VideoSettings
 		screenMode = _newMode;
 	}
 
-	ScreenMode getScreenMode()
+	ScreenMode GetScreenMode()
 	{
 		return screenMode;
 	}
 
-	void setScreenHeight(int _newHeight)
+	void SetScreenHeight(int _newHeight)
 	{
 		_screenHeight = _newHeight;
 	}
 
-	int getScreenHeight()
+	int GetScreenHeight()
 	{
 		return _screenHeight;
 	}
 
-	void setScreenWidth(int _newWidth)
+	void SetScreenWidth(int _newWidth)
 	{
 		_screenWidth = _newWidth;
 	}
 
-	int getScreenWidth()
+	int GetScreenWidth()
 	{
 		return _screenWidth;
 	}

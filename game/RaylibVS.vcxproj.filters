@@ -63,6 +63,12 @@
     <ClInclude Include="GameSettings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="MatchData.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ggpo-master\include\ggponet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entity.cpp">
@@ -84,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
