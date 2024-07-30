@@ -153,7 +153,7 @@ public:
 	~GameSettings();
 
 	void WriteSettings();
-	bool ReadSettings();
+	bool LoadSettings();
 
 	SoundSettings _soundSettings;
 	MatchSettings _matchSettings;

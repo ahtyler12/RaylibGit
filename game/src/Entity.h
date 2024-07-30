@@ -119,7 +119,7 @@ class Entity
     int bufferIndex = -1;
     
     /*Reference to the other player*/
-    Entity* otherEntity;
+    std::shared_ptr<Entity> otherEntity;
 
     /*Pushbox Data*/
     Vector3 size;
@@ -132,7 +132,7 @@ class Entity
     bool debug;
     bool hasControl = false;
 
-    bool CheckCollision(Entity* _entity);
+    bool CheckCollision(std::shared_ptr<Entity> _entity);
     void Draw();
     void Update();
     void UpdateAnimations(unsigned int _animIndex);

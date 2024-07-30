@@ -9,7 +9,7 @@ void StateMachine::RegisterState(std::shared_ptr<State> _newState, StateID _id)
     _newCallback.OnExit = std::bind(&State::OnExit, _newState);
     _newCallback.OnUpdate = std::bind(&State::OnUpdate, _newState, std::placeholders::_1);
     _newCallback.OnTransition = std::bind(&State::TriggerTransition, _newState);
-
+    _newCallback.OnDraw = std::bind(&State::DebugDraw, _newState, std::placeholders::_1);
     Callbacks.push_back(_newCallback);
 }
 
@@ -24,6 +24,8 @@ StateMachine::StateMachine()
     auto falling = std::make_shared<Falling>();
     auto attack = std::make_shared<Attack>();
     auto reaction = std::make_shared<ReactionState>();
+    auto walkRight = std::make_shared<WalkRight>();
+    auto walkLeft = std::make_shared<WalkLeft>();
 
     RegisterState(standing, StateID::STANDING);
     RegisterState(jumping, StateID::JUMPING);
@@ -31,6 +33,8 @@ StateMachine::StateMachine()
     RegisterState(falling, StateID::FALLING);
     RegisterState(attack, StateID::ATTACKING);
     RegisterState(reaction, StateID::REACTION);
+    RegisterState(walkRight, StateID::WALKRIGHT);
+    RegisterState(walkLeft, StateID::WALKLEFT);
 
     currentState = Callbacks.at(0);
 

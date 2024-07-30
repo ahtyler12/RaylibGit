@@ -95,5 +95,6 @@
     <ClCompile Include="MatchData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ScreenManager.cpp" />
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@ GameSettings::GameSettings()
 	_inputSettings = {};
 	_videoSettings = {};
 
-	ReadSettings();
+	LoadSettings();
 	_videoSettings.InitVideo();
 }
 
@@ -42,7 +42,7 @@ void GameSettings::WriteSettings()
 
 }
 
-bool GameSettings::ReadSettings()
+bool GameSettings::LoadSettings()
 {
 	Json::Value root;
 	std::ifstream input(fileName);

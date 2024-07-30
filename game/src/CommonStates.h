@@ -27,6 +27,8 @@ enum StateID : __int32
     NONE,
     STANDING,
     CROUCHING,
+    WALKRIGHT,
+    WALKLEFT,
     JUMPING,
     FALLING,
     ATTACKING,
@@ -65,7 +67,7 @@ struct Standing : public State
       std::cout << "Standing Start\n";
       hurtBoxes.push_back(BoundingBox{Vector3{25, 0, 0},Vector3{25, 50, 0}});
       hurtBoxes.push_back(BoundingBox{Vector3{25, 50, 0},Vector3{25, 100, 0}});
-      hurtBoxes.push_back(BoundingBox{Vector3{25, 100, 0},Vector3{25, 125, 0}});
+      hurtBoxes.push_back(BoundingBox{Vector3{25, 110, 0},Vector3{25, 125, 0}});
 
    }
 
@@ -79,24 +81,26 @@ struct Standing : public State
       {
          nextState = CROUCHING;
       }
-
-      // if(_context.shouldDraw)
-      // {
-      //    DebugDraw(_context);
-      // }
-
+      else if (_context.input.forward)
+      {
+          nextState = WALKRIGHT;
+      }
+      else if (_context.input.back)
+      {
+          nextState = WALKLEFT;
+      }
       
    }
 
-   void DebugDraw(StateContext _context)
+   void DebugDraw(StateContext _context) override
    {
-      for (auto &box : hurtBoxes)
+
+      for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
       {
-         DrawBoundingBox(BoundingBox{Vector3{_context.position.x - box.min.x, _context.position.y - box.min.y, box.min.z},
-                                     Vector3{_context.position.x + box.max.x, _context.position.y + box.max.y, box.max.z}},
-                                      BLUE);
+          DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
+                            Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+              BLUE);
       }
-      
    }
 
    void OnExit() override
@@ -313,9 +317,127 @@ struct ReactionState : public State
    }
 };
 
+struct WalkRight : public State
+{
+
+    char name[256] = "Walk Right";
+
+    void OnStart() override
+    {
+        std::cout << "Walk Right Start\n";
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 50, 0},Vector3{25, 100, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 100, 0},Vector3{25, 125, 0} });
+
+    }
+
+    void OnUpdate(StateContext& _context) override
+    {
+        if (!_context.input.forward)
+        {
+            nextState = STANDING;
+        }
+        else if (_context.input.down)
+        {
+            nextState = CROUCHING;
+        }
+        else if (_context.input.back)
+        {
+            nextState = WALKLEFT;
+        }
+
+        if (_context.shouldDraw)
+        {
+            DebugDraw(_context);
+        }
 
 
+    }
 
+    void DebugDraw(StateContext _context)
+    {
+        for (auto& box : hurtBoxes)
+        {
+            DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - box.min.x, _context.position.y - box.min.y, box.min.z},
+                                        Vector3{_context.position.x + box.max.x, _context.position.y + box.max.y, box.max.z} },
+                BLUE);
+        }
+
+    }
+
+    void OnExit() override
+    {
+        std::cout << "Walk Righ Exit\n";
+        nextState = StateID::NONE;
+        hurtBoxes.clear();
+    }
+
+    StateID TriggerTransition() override
+    {
+        return nextState;
+    }
+};
+
+struct WalkLeft : public State
+{
+
+    char name[256] = "Walk Left";
+
+    void OnStart() override
+    {
+        std::cout << "Walk Left Start\n";
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 50, 0},Vector3{25, 100, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, 100, 0},Vector3{25, 125, 0} });
+
+    }
+
+    void OnUpdate(StateContext& _context) override
+    {
+        if (!_context.input.back)
+        {
+            nextState = STANDING;
+        }
+        else if (_context.input.down)
+        {
+            nextState = CROUCHING;
+        }
+        else if (_context.input.forward)
+        {
+            nextState = WALKRIGHT;
+        }
+
+        if (_context.shouldDraw)
+        {
+            DebugDraw(_context);
+        }
+
+
+    }
+
+    void DebugDraw(StateContext _context)
+    {
+        for (auto& box : hurtBoxes)
+        {
+            DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - box.min.x, _context.position.y - box.min.y, box.min.z},
+                                        Vector3{_context.position.x + box.max.x, _context.position.y + box.max.y, box.max.z} },
+                BLUE);
+        }
+
+    }
+
+    void OnExit() override
+    {
+        std::cout << "Walk Left Exit\n";
+        nextState = StateID::NONE;
+        hurtBoxes.clear();
+    }
+
+    StateID TriggerTransition() override
+    {
+        return nextState;
+    }
+};
 
  
  

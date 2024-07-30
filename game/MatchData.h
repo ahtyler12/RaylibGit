@@ -29,14 +29,20 @@ class MatchData
 public:
 	float _roundTime;
 	int _numRounds;
+	int _numPlayers;
 	MatchType _matchType;
 	MatchState ms;
-	std::vector<Entity> entities;
+	std::shared_ptr<GameSettings> _settings;
+	std::vector<std::shared_ptr<Entity>> entities;
 	GGPOSession *ggpo = NULL;
 
+	MatchData();
+	MatchData(MatchType _type, std::shared_ptr<GameSettings> _newSettings);
+	~MatchData();
 	bool StartMatch(MatchType _type);
-	int  EndMatch(MatchEndReason _endReason);
+	bool EndMatch(MatchEndReason _endReason);
 	void UpdateMatchState();
+	void DrawMatchState(Camera3D camera);
 	
 
 private:
@@ -44,7 +50,7 @@ private:
 	bool Event_callback(GGPOEvent* info);
 	void Free_buffer(void* buffer);
 	bool Log_game_state(char* filename, unsigned char* buffer, int);
-	bool  Load_game_state_callback(unsigned char* buffer, int len);
+	bool Load_game_state_callback(unsigned char* buffer, int len);
 	bool Save_game_state_callback(unsigned char** buffer, int* len, int* checksum, int);
 	bool Begin_game_callback(const char*);
 	GGPOSessionCallbacks  CreateCallbacks();

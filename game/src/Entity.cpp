@@ -6,7 +6,7 @@ Entity::Entity()
     currentMeter = maxMeter;
     currentHealth = maxHealth;
     entityModel = LoadModel("Eve.glb"); //Should have a variable for the path so that every entity can load it's own model
-    //entityAnimations = LoadModelAnimations("Eve.glb", &entityAnimCount);
+    entityAnimations = LoadModelAnimations("Eve.glb", &entityAnimCount);
     animIndex = 1;
     rotationAngle = 90.f;
     rotationAxis =  {1.f, 0.f,0.f};
@@ -136,7 +136,7 @@ void Entity::HandleHitEvent(HitEvent _event)
 }
 
 
-bool Entity::CheckCollision(Entity *entity)
+bool Entity::CheckCollision(std::shared_ptr<Entity> entity)
 {
     if(CheckCollisionBoxes(pushBox, entity->pushBox))
     {
@@ -153,10 +153,8 @@ void Entity::Draw()
         DrawCubeWires(position, 10.f, 10.f, .1f, YELLOW);
         //Visual representation of the pushbox for debuging purposes
         DrawBoundingBox(pushBox, GREEN);
-        // for(auto box : hurtBoxes)
-        // {
-        //     DrawBoundingBox(box, BLUE);
-        // }
+        _stateMachine->context.shouldDraw = true;
+        _stateMachine->currentState.OnDraw(_stateMachine->context);
     }
 }
 
@@ -236,7 +234,7 @@ void Entity::GatherInput()
 {
     if(hasControl)
     {
-        if((IsKeyDown(KEY_LEFT) && isFacingRight) || (IsKeyDown(KEY_RIGHT) && !isFacingRight))
+        if(IsKeyDown(KEY_LEFT))
         {
             inputCommand.backward = true;
         }
@@ -245,7 +243,7 @@ void Entity::GatherInput()
            inputCommand.backward = false;
         }
 
-        if((IsKeyDown(KEY_RIGHT) && isFacingRight) || (IsKeyDown(KEY_LEFT) && !isFacingRight))
+        if(IsKeyDown(KEY_RIGHT))
         {
             inputCommand.forward = true;
                                

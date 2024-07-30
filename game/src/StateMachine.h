@@ -16,6 +16,7 @@ struct StateCallbacks
     std::function<void(StateContext &)> OnUpdate;
     std::function<void()> OnExit;
     std::function<StateID()> OnTransition;
+    std::function<void(StateContext&)> OnDraw;
 };
 
 

@@ -73,12 +73,46 @@ bool MatchData::Begin_game_callback(const char*)
 	return true;
 }
 
+MatchData::MatchData()
+{
+	_matchType = LOCAL; //This will later be set by the main menu
+	_settings = std::make_shared<GameSettings>(); //Should be pulled from the existing one but if not the data is still going to be the same regardless
+	_numPlayers = 2;
+	StartMatch(_matchType);//We call Start Match for now to debug
+}
+
+MatchData::MatchData(MatchType _type, std::shared_ptr<GameSettings> _newSettings)
+{
+	_settings = _newSettings;
+	_matchType = _type;
+	_numPlayers = 2;
+	StartMatch(_matchType);
+}
+
+MatchData::~MatchData()
+{
+}
+
 bool MatchData::StartMatch(MatchType _type)
 {
+	Vector3 player1Start = { -50.f,0.f,0.f };
+	Vector3 player2Start = { 50.f,0.f,0.f };
+	_roundTime = _settings->_matchSettings.GetRoundTime();
+	_numRounds = _settings->_matchSettings.GetRoundCount();
 	
 	switch (_type)
 	{
 	case LOCAL:
+		for (int i = 0; i < _numPlayers; i++)
+		{
+			entities[i] = std::make_shared<Entity>();
+		}
+
+		entities[0]->position = player1Start;
+		entities[0]->hasControl = true;
+		entities[0]->otherEntity = entities[1];
+		entities[1]->position = player2Start;
+		entities[1]->otherEntity = entities[0];
 		break;
 	case ONLINE:
 		GGPOPlayer Players[GGPO_MAX_SPECTATORS + GGPO_MAX_PLAYERS];
@@ -92,13 +126,27 @@ bool MatchData::StartMatch(MatchType _type)
     return false;
 }
 
-int MatchData::EndMatch(MatchEndReason _endReason)
+bool MatchData::EndMatch(MatchEndReason _endReason)
 {
-    return 0;
+    return true;
 }
 
 void MatchData::UpdateMatchState()
 {
+	for (int i = 0; i < entities.size(); i++)
+	{
+		entities[i]->Update();
+	}
+}
+
+void MatchData::DrawMatchState(Camera3D camera)
+{
+	BeginMode3D(camera);
+	for (int i = 0; i < entities.size(); i++)
+	{
+		entities[i]->Draw();
+	}
+	EndMode3D();
 }
 
 GGPOSessionCallbacks  MatchData::CreateCallbacks()
