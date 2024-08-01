@@ -13,7 +13,6 @@ Entity::Entity()
     scale = {1.f,1.f,1.f};
     debug = true;
     comboCounter = 0;
-    inputBuffer.resize(INPUT_BUFFER_SIZE);
     hurtBoxes.resize(3); 
     velocity = {0};
    
@@ -22,112 +21,6 @@ Entity::Entity()
     jumpVelocity = 25.f;
     hitStopFrames = 0;
     _stateMachine = std::make_shared<StateMachine>();
-}
-
-bool Entity::wasInputPressedOnFrame(InputTypes inputToCheck, int frame)
-{
-    const unsigned int _bufferIndex = frame % inputBuffer.max_size();
-    const unsigned int _lastBufferIndex = (inputBuffer.max_size() + frame -1) % inputBuffer.max_size();
-
-    const InputData currentInput = inputBuffer.at(_bufferIndex);
-    const InputData lastInput = inputBuffer.at(_lastBufferIndex);
-
-    bool Pressed =  false;
-    switch (inputToCheck)
-    {
-        case  InputTypes::UP:
-        {             
-            Pressed = currentInput.up && !lastInput.up;
-            break;
-        }
-        case  InputTypes::DOWN:
-        {             
-            Pressed = currentInput.down && !lastInput.down;
-            break;
-        }
-        case  InputTypes::FORWARD:
-        {             
-            Pressed = currentInput.forward && !lastInput.forward;
-            break;
-        }
-        case  InputTypes::BACKWARD:
-        {             
-            Pressed = currentInput.backward && !lastInput.backward;
-            break;
-        }
-        case  InputTypes::ATTACK:
-        {             
-            Pressed = currentInput.attack && !lastInput.attack;
-            break;
-        }
-        
-        default:
-        {     
-            Pressed = false;
-            break;
-        }
-    }
-
-    return Pressed;
-}
-
-bool Entity::wasInputPressed(InputTypes inputToCheck)
-{
-    const InputData currentInput = GetCurrentInputCommand();
-    const InputData lastInput = GetLastInputCommand();
-    bool Pressed = false;
-
-    switch (inputToCheck)
-    {
-        case  InputTypes::UP:
-        {             
-            Pressed = currentInput.up && !lastInput.up;
-            break;
-        }
-        case  InputTypes::DOWN:
-        {             
-            Pressed = currentInput.down && !lastInput.down;
-            break;
-        }
-        case  InputTypes::FORWARD:
-        {             
-            Pressed = currentInput.forward && !lastInput.forward;
-            break;
-        }
-        case  InputTypes::BACKWARD:
-        {             
-            Pressed = currentInput.backward && !lastInput.backward;
-            break;
-        }
-        case  InputTypes::ATTACK:
-        {             
-            Pressed = currentInput.attack && !lastInput.attack;
-            break;
-        }
-        
-        default:
-        {     
-            Pressed = false;
-            break;
-        }
-    }
-
-    return Pressed;
-}
-
-void Entity::UpdateInputs()
-{
-    bufferIndex = (bufferIndex +1) % inputBuffer.max_size();
-}
-
-InputData Entity::GetCurrentInputCommand()
-{
-    return inputBuffer.at(bufferIndex);
-}
-
-InputData Entity::GetLastInputCommand()
-{
-    return inputBuffer.at((inputBuffer.max_size() + bufferIndex -1) % inputBuffer.max_size());
 }
 
 void Entity::HandleHitEvent(HitEvent _event)
@@ -210,24 +103,15 @@ void Entity::UpdatePhysics()
         }
     }
 
-    // if(position.y > 0)
-    // {
-    //     _stateMachine->context.velocity.y -= 2; //Should be a variable rather than a literal. 
-    // }
 
-    position =  {position.x + _stateMachine->context.velocity.x, position.y + _stateMachine->context.velocity.y, position.z + _stateMachine->context.velocity.z}; //Bug where the velocity from the last state carries over to new state. Need to fix
-    pushBox = {Vector3{position.x - 15, position.y, position.z},Vector3{position.x + 15, position.y + 100, position.z}}; //Update the position of the push box
-    hurtBoxes.at(0) = {Vector3{position.x - 25, position.y, position.z},Vector3{position.x + 25, position.y + 50, position.z}};
-    hurtBoxes.at(1) = {Vector3{position.x - 25, position.y+50, position.z},Vector3{position.x + 25, position.y + 100, position.z}};
-    hurtBoxes.at(2) = {Vector3{position.x - 25, position.y+100, position.z},Vector3{position.x + 25, position.y + 125, position.z}};
-    _stateMachine->context.position = position;
-    
-
+    position =  {position.x + _stateMachine->context.velocity.x, position.y + _stateMachine->context.velocity.y, position.z + _stateMachine->context.velocity.z}; //Bug where the velocity from the last state carries over to new state. Need to fix     
     //Ensure that the player never goes below the "Floor" of the level. 
     if(position.y < 0)
     {
         position.y = 0;
     }
+    pushBox = { Vector3{position.x - 15, position.y, position.z},Vector3{position.x + 15, position.y + 100, position.z} }; //Update the position of the push box
+    _stateMachine->context.position = position;
 }
 
 void Entity::GatherInput()
@@ -236,41 +120,41 @@ void Entity::GatherInput()
     {
         if(IsKeyDown(KEY_LEFT))
         {
-            inputCommand.backward = true;
+            currentInput.left = true;
         }
         else
         {
-           inputCommand.backward = false;
+           currentInput.left = false;
         }
 
         if(IsKeyDown(KEY_RIGHT))
         {
-            inputCommand.forward = true;
+            currentInput.right = true;
                                
         }
         else
         {
-            inputCommand.forward = false;
+            currentInput.right = false;
            
         }
 
         if(IsKeyDown(KEY_DOWN))
         {
-            inputCommand.down = true;           
+            currentInput.down = true;           
         }
         else
         {
-            inputCommand.down = false;
+            currentInput.down = false;
         }
     
 
         if(IsKeyPressed(KEY_UP))
         {
-            inputCommand.up = true;            
+            currentInput.up = true;            
         }
         else
         {
-            inputCommand.up = false;
+            currentInput.up = false;
         }
         
 
@@ -282,10 +166,10 @@ void Entity::GatherInput()
 
 
         _stateMachine->context.input = {
-                                        inputCommand.up,
-                                        inputCommand.down,
-                                        inputCommand.forward,
-                                        inputCommand.backward
+                                        currentInput.up,
+                                        currentInput.down,
+                                        currentInput.right,
+                                        currentInput.left
                                         };
     }
     

@@ -69,6 +69,7 @@
     <ClInclude Include="..\ggpo-master\include\ggponet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entity.cpp">
@@ -96,5 +97,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ScreenManager.cpp" />
+    <ClCompile Include="InputComponent.cpp" />
   </ItemGroup>
 </Project>

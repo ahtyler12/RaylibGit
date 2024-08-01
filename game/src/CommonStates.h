@@ -8,8 +8,8 @@ struct Inputs
 {
    bool up;
    bool down;
-   bool forward;
-   bool back;
+   bool right;
+   bool left;
 };
 
 
@@ -20,6 +20,11 @@ struct StateContext //Holds infromation from the Entity that owns the state mach
    Vector3 velocity = {0.f,0.f,0.f};
    Inputs input = {0};
    bool shouldDraw = false;
+
+   void resetXVelocity() { velocity.x = 0; }
+   void resetYVelocity() { velocity.y = 0; }
+   void resetPosition(){ position = { 0.f,0.f,0.f }; }
+
 };
 
 enum StateID : __int32
@@ -48,10 +53,10 @@ struct State
    std::vector<BoundingBox> hurtBoxes;
    bool shouldTransition = false;
    StateID nextState = StateID::NONE;
-   virtual void OnStart() = 0; //Treat like the initialization of the state. Any resources that should be aquired are created here
+   virtual void OnStart(StateContext& _context) = 0; //Treat like the initialization of the state. Any resources that should be aquired are created here
    virtual void OnUpdate(StateContext &_context) = 0;
    virtual void DebugDraw(StateContext _context) = 0;
-   virtual void OnExit() = 0; //Treat like the deinitialization of the state. Any resources that are aquired are destroyed here
+   virtual void OnExit(StateContext& _context) = 0; //Treat like the deinitialization of the state. Any resources that are aquired are destroyed here
    virtual StateID TriggerTransition(){return StateID::NONE;};
 
 };
@@ -62,13 +67,12 @@ struct Standing : public State
       
    char name[256] = "Standing";
 
-   void OnStart() override
+   void OnStart(StateContext& _context) override
    {
       std::cout << "Standing Start\n";
       hurtBoxes.push_back(BoundingBox{Vector3{25, 0, 0},Vector3{25, 50, 0}});
-      hurtBoxes.push_back(BoundingBox{Vector3{25, 50, 0},Vector3{25, 100, 0}});
-      hurtBoxes.push_back(BoundingBox{Vector3{25, 110, 0},Vector3{25, 125, 0}});
-
+      hurtBoxes.push_back(BoundingBox{Vector3{25, -50, 0},Vector3{25, 100, 0}});
+      hurtBoxes.push_back(BoundingBox{Vector3{25, -100, 0},Vector3{25, 125, 0}});
    }
 
    void OnUpdate(StateContext &_context) override
@@ -81,11 +85,11 @@ struct Standing : public State
       {
          nextState = CROUCHING;
       }
-      else if (_context.input.forward)
+      else if (_context.input.right)
       {
           nextState = WALKRIGHT;
       }
-      else if (_context.input.back)
+      else if (_context.input.left)
       {
           nextState = WALKLEFT;
       }
@@ -103,7 +107,7 @@ struct Standing : public State
       }
    }
 
-   void OnExit() override
+   void OnExit(StateContext& _context) override
    {
       std::cout << "Standing Exit\n";
       nextState = StateID::NONE;
@@ -119,9 +123,12 @@ struct Standing : public State
 struct Crouch : public State
 {
  
-   void OnStart()
+   void OnStart(StateContext& _context)
    {
       std::cout << "Crouch Start\n";
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 25, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -25, 0},Vector3{25, 50, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 75, 0} });
    }
 
    void OnUpdate(StateContext &_context) override
@@ -135,13 +142,19 @@ struct Crouch : public State
 
    void DebugDraw(StateContext _context) 
    {
-      
+       for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
+       {
+           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
+                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+               BLUE);
+       }
    }
 
-   void OnExit()
+   void OnExit(StateContext& _context)
    {
       std::cout << "Crouch Exit\n";
       nextState = StateID::NONE;
+      hurtBoxes.clear();
    }
 
    StateID TriggerTransition()
@@ -153,14 +166,16 @@ struct Crouch : public State
 struct Jumping : public State
 {
    char name[256] = "Jumping";
-   float initialVelocity = 40.f;
-   float jumpDeceleration = -2;
+   float initialVelocity = 65.f;
+   float jumpDeceleration = 8;
    bool startJump =  true;
-   void OnStart()
+   void OnStart(StateContext& _context)
    {
 
       std::cout << "Jump Start\n";
-      
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 100, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -100, 0},Vector3{25, 125, 0} });
    }
 
    void OnUpdate(StateContext &_context)
@@ -170,30 +185,34 @@ struct Jumping : public State
          _context.velocity.y = initialVelocity; //Very Hacky way of doing this. Probably an easier way of doing it
          startJump = false;
       }   
-      _context.velocity.y -=4;   
+      _context.velocity.y -= jumpDeceleration;   
 
       if(_context.velocity.y < 0)
       {
          nextState = FALLING;
       }
       
-      // if(_context.shouldDraw)
-      // {
-      //    DebugDraw(_context);
-      // }
 
    }
 
    void DebugDraw(StateContext _context)
    {
-      
+       for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
+       {
+           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
+                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+               BLUE);
+       }
    }
 
-   void OnExit()
+   void OnExit(StateContext& _context)
    {
       std::cout << "Jump Exit\n";
       startJump =  true;
       nextState = StateID::NONE;
+      hurtBoxes.clear();
+
+      _context.resetYVelocity();
    }
 
    StateID TriggerTransition() override
@@ -204,15 +223,18 @@ struct Jumping : public State
 
 struct Falling : public State
 {
-   void OnStart()
+   void OnStart(StateContext& _context)
    {
       std::cout << "Falling Start\n";
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 100, 0} });
+      hurtBoxes.push_back(BoundingBox{ Vector3{25, -100, 0},Vector3{25, 125, 0} });
    }
 
    void OnUpdate(StateContext &_context)
    {
-      //_context.velocity.y -=2;   
-      if(_context.position.y == 0)
+      _context.velocity.y = -8;   
+      if(_context.position.y <= 0)
       {
          nextState = STANDING;
       }
@@ -221,13 +243,20 @@ struct Falling : public State
    
    void DebugDraw(StateContext _context)
    {
-      
+       for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
+       {
+           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
+                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+               BLUE);
+       }
    }
 
-   void OnExit()
+   void OnExit(StateContext& _context)
    {
       std::cout << "Falling End\n";
       nextState = StateID::NONE;
+      hurtBoxes.clear();
+      _context.resetYVelocity();
    }
 
    StateID TriggerTransition() override
@@ -240,7 +269,7 @@ struct Attack : public State
 {
    int duration = 100;
 
-   void OnStart()
+   void OnStart(StateContext& _context)
    {
       std::cout << "Attack Start\n";
    }
@@ -264,7 +293,7 @@ struct Attack : public State
       
    }
 
-   void OnExit()
+   void OnExit(StateContext& _context)
    {
       std::cout << "Attack End\n";
       nextState = StateID::NONE;
@@ -281,7 +310,7 @@ struct ReactionState : public State
 {
    int duration = 100;
 
-   void OnStart()
+   void OnStart(StateContext& _context)
    {
       std::cout << "Reaction Start\n";
    }
@@ -305,7 +334,7 @@ struct ReactionState : public State
       
    }
 
-   void OnExit()
+   void OnExit(StateContext& _context)
    {
       std::cout << "Reaction End\n";
       nextState = StateID::NONE;
@@ -322,35 +351,31 @@ struct WalkRight : public State
 
     char name[256] = "Walk Right";
 
-    void OnStart() override
+    void OnStart(StateContext& _context) override
     {
         std::cout << "Walk Right Start\n";
         hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
-        hurtBoxes.push_back(BoundingBox{ Vector3{25, 50, 0},Vector3{25, 100, 0} });
-        hurtBoxes.push_back(BoundingBox{ Vector3{25, 100, 0},Vector3{25, 125, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 100, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, -100, 0},Vector3{25, 125, 0} });
 
     }
 
     void OnUpdate(StateContext& _context) override
     {
-        if (!_context.input.forward)
+        _context.velocity.x = 2;
+        if (!_context.input.right)
         {
             nextState = STANDING;
+            
         }
         else if (_context.input.down)
         {
             nextState = CROUCHING;
         }
-        else if (_context.input.back)
+        else if (_context.input.left)
         {
             nextState = WALKLEFT;
         }
-
-        if (_context.shouldDraw)
-        {
-            DebugDraw(_context);
-        }
-
 
     }
 
@@ -365,11 +390,12 @@ struct WalkRight : public State
 
     }
 
-    void OnExit() override
+    void OnExit(StateContext& _context) override
     {
         std::cout << "Walk Righ Exit\n";
         nextState = StateID::NONE;
         hurtBoxes.clear();
+        _context.resetXVelocity();
     }
 
     StateID TriggerTransition() override
@@ -383,18 +409,19 @@ struct WalkLeft : public State
 
     char name[256] = "Walk Left";
 
-    void OnStart() override
+    void OnStart(StateContext& _context) override
     {
         std::cout << "Walk Left Start\n";
         hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
-        hurtBoxes.push_back(BoundingBox{ Vector3{25, 50, 0},Vector3{25, 100, 0} });
-        hurtBoxes.push_back(BoundingBox{ Vector3{25, 100, 0},Vector3{25, 125, 0} });
-
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 100, 0} });
+        hurtBoxes.push_back(BoundingBox{ Vector3{25, -100, 0},Vector3{25, 125, 0} });
+        
     }
 
     void OnUpdate(StateContext& _context) override
     {
-        if (!_context.input.back)
+        _context.velocity.x = -2;
+        if (!_context.input.left)
         {
             nextState = STANDING;
         }
@@ -402,17 +429,10 @@ struct WalkLeft : public State
         {
             nextState = CROUCHING;
         }
-        else if (_context.input.forward)
+        else if (_context.input.right)
         {
             nextState = WALKRIGHT;
         }
-
-        if (_context.shouldDraw)
-        {
-            DebugDraw(_context);
-        }
-
-
     }
 
     void DebugDraw(StateContext _context)
@@ -426,11 +446,12 @@ struct WalkLeft : public State
 
     }
 
-    void OnExit() override
+    void OnExit(StateContext& _context) override
     {
         std::cout << "Walk Left Exit\n";
         nextState = StateID::NONE;
         hurtBoxes.clear();
+        _context.resetXVelocity();
     }
 
     StateID TriggerTransition() override

@@ -12,11 +12,11 @@
 struct StateCallbacks 
 {
     StateID stateID;
-    std::function<void()> OnStart;
-    std::function<void(StateContext &)> OnUpdate;
-    std::function<void()> OnExit;
+    std::function<void(StateContext&)> OnStart;
+    std::function<void(StateContext&)> OnUpdate;
+    std::function<void(StateContext&)> OnExit;
     std::function<StateID()> OnTransition;
-    std::function<void(StateContext&)> OnDraw;
+    std::function<void(StateContext)> OnDraw;
 };
 
 

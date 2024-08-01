@@ -14,10 +14,10 @@ int main(void)
     /*This Stuff Should be moved to the Game Object to keep this looking clean*/
 
     Camera camera = { 0 };
-    camera.position = Vector3{ 0.0f, 90.0f, 350.0f };    // Camera position
-    camera.target = Vector3{ 0.0f, 90.0f, 0.0f };      // Camera looking at point
+    camera.position = Vector3{ 0.0f, 200.0f, 350.0f };    // Camera position
+    camera.target = Vector3{ 0.0f, 200.0f, 0.0f };      // Camera looking at point
     camera.up = Vector3{ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
-    camera.fovy = 45.0f;                                // Camera field-of-view Y
+    camera.fovy = 60.0f;                                // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 
     Vector3 player1Start = { -50.f,0.f,0.f };

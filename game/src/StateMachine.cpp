@@ -5,8 +5,8 @@ void StateMachine::RegisterState(std::shared_ptr<State> _newState, StateID _id)
      
     StateCallbacks _newCallback = {};
     _newCallback.stateID = _id;
-    _newCallback.OnStart = std::bind(&State::OnStart, _newState);
-    _newCallback.OnExit = std::bind(&State::OnExit, _newState);
+    _newCallback.OnStart = std::bind(&State::OnStart, _newState, std::placeholders::_1);
+    _newCallback.OnExit = std::bind(&State::OnExit, _newState, std::placeholders::_1);
     _newCallback.OnUpdate = std::bind(&State::OnUpdate, _newState, std::placeholders::_1);
     _newCallback.OnTransition = std::bind(&State::TriggerTransition, _newState);
     _newCallback.OnDraw = std::bind(&State::DebugDraw, _newState, std::placeholders::_1);
@@ -38,7 +38,7 @@ StateMachine::StateMachine()
 
     currentState = Callbacks.at(0);
 
-    currentState.OnStart(); 
+    currentState.OnStart(context); 
 
    
 }
@@ -52,9 +52,9 @@ void StateMachine::HandleStateTransitions(StateID _id)
         if (callback.stateID == _id)
         {
             _newCallback = callback;
-            currentState.OnExit();
+            currentState.OnExit(context);
 
-            _newCallback.OnStart();
+            _newCallback.OnStart(context);
             currentState = _newCallback;
             break;
         }
@@ -100,7 +100,14 @@ void StateMachine::UpdateState()
                 canTransition = false;
                 HandleStateTransitions(REACTION);
                 break;
-            
+            case WALKLEFT:
+                canTransition = false;
+                HandleStateTransitions(WALKLEFT);
+                break;
+            case WALKRIGHT:
+                canTransition = false;
+                HandleStateTransitions(WALKRIGHT);
+                break;
             default:
                 break;
         }

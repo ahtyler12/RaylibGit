@@ -2,16 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include "InputComponent.h"
 #include "StateMachine.h"
  
-enum InputTypes
-{
-    UP,
-    DOWN,
-    BACKWARD,
-    FORWARD,
-    ATTACK
-};
+
 
 struct HitEvent //This gets sent to the entity that receives a hit in order to update physics
 {
@@ -37,24 +31,7 @@ struct AttackProperties //Holds properties for each attack
 
 };
 
-struct InputData
-{   
-    bool up;
-    bool down;
-    bool backward;
-    bool forward;
-    bool attack;
 
-    void Reset()
-    {
-        up = false;
-        down = false;
-        forward = false;
-        backward = false;
-        attack = false;
-    }
-    
-};
 
 
 class Entity
@@ -112,11 +89,8 @@ class Entity
     float hitStunDecayModifier; 
     int comboCounter;
 
-    /*Input variables*/
-    int INPUT_BUFFER_SIZE = 60;
-    InputData inputCommand;
-    std::vector<InputData> inputBuffer;
-    int bufferIndex = -1;
+    /*Input variable*/
+    InputData currentInput;
     
     /*Reference to the other player*/
     std::shared_ptr<Entity> otherEntity;
@@ -139,11 +113,6 @@ class Entity
     void PlayAnimation(ModelAnimation anim);
     void UpdatePhysics();
     void GatherInput();
-    bool wasInputPressedOnFrame(InputTypes inputToCheck, int frame);
-    bool wasInputPressed(InputTypes inputToCheck);
-    void UpdateInputs();
-    InputData GetCurrentInputCommand();
-    InputData GetLastInputCommand();
     void HandleHitEvent(HitEvent _event);
 
 };
