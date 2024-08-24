@@ -1,5 +1,8 @@
 #include "ScreenManager.h"
 
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+
 ScreenManager::ScreenManager(std::shared_ptr<GameSettings> _newSettings)
 {
 	_currentScreen = LOGO;
@@ -41,6 +44,9 @@ Screen ScreenManager::ChangeScreen(Screen _newScreen)
 		case CHARACTERSELECT:
 			return CHARACTERSELECT;
 			break;
+		case MATCH:
+			return MATCH;
+			break;
 		default:
 			break;
 		}
@@ -72,9 +78,6 @@ void ScreenManager::DrawScreen()
 		break;
 	case MATCH:
 		DrawMatchScreen();
-	default:
-		DrawLogo();
-		break;
 	}
 }
 
@@ -96,6 +99,10 @@ void ScreenManager::DrawLogo()
 void ScreenManager::DrawMainMenu()
 {
 	DrawText("Main Menu Screen", ((GetScreenWidth() - 36) / 2), ((GetScreenHeight() - 36) / 2), 36, BLACK);
+	if (GuiButton(Rectangle{ 50, 20, 100,50}, "Start Match!"))
+	{
+		_currentScreen = ChangeScreen(MATCH);
+	}
 }
 
 void ScreenManager::DrawSettings()
@@ -115,5 +122,7 @@ void ScreenManager::DrawCharacterSelect()
 
 void ScreenManager::DrawMatchScreen()
 {
+	float value = 3.f;
+	GuiProgressBar(Rectangle{50,20,100,50},"", "", &value, 0, 100);
 
 }

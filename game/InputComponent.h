@@ -8,7 +8,11 @@ enum InputTypes
     LEFT,
     BACKWARD,
     FORWARD,
-    ATTACK
+    ATTACK,
+    LIGHT,
+    MEDIUM,
+    HEAVY,
+    THROW
 };
 
 
@@ -90,7 +94,7 @@ public:
 
     /*Input variables*/
     int INPUT_BUFFER_SIZE = 60;
-    InputData inputCommand;
+    InputData inputCommand = {};
     std::vector<InputData> inputBuffer;
     int bufferIndex = -1;
 

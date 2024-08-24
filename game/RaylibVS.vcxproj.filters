@@ -70,6 +70,11 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputComponent.h" />
+    <ClInclude Include="Components.h" />
+    <ClInclude Include="PhysicsComponent.h" />
+    <ClInclude Include="..\raylib-master\src\raygui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entity.cpp">
@@ -98,5 +103,7 @@
     </ClCompile>
     <ClCompile Include="src\ScreenManager.cpp" />
     <ClCompile Include="InputComponent.cpp" />
+    <ClCompile Include="Components.cpp" />
+    <ClCompile Include="PhysicsComponent.cpp" />
   </ItemGroup>
 </Project>

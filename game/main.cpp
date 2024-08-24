@@ -1,15 +1,16 @@
 #include "raylib.h"
 #include <vector>
+
 #include "GameState.h"
 
 
 int main(void)
 {    
-	//std::shared_ptr<GameState> gs = std::make_shared<GameState>(); //Using Shared pointer to make memory management easier        
+	std::shared_ptr<GameState> gs = std::make_shared<GameState>(); //Using Shared pointer to make memory management easier        
     const int screenWidth = 800;
     const int screenHeight = 600;
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(screenWidth, screenHeight, "My first RAYLIB program!");
+    InitWindow(screenWidth, screenHeight, "Fighting Game");
 
     /*This Stuff Should be moved to the Game Object to keep this looking clean*/
 

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "InputComponent.h"
+#include "Components.h"
 #include "StateMachine.h"
  
 
@@ -91,6 +91,8 @@ class Entity
 
     /*Input variable*/
     InputData currentInput;
+    std::shared_ptr<InputComponent> _inputComponent;
+    std::shared_ptr<PhysicsComponent> _physicsComponent;
     
     /*Reference to the other player*/
     std::shared_ptr<Entity> otherEntity;

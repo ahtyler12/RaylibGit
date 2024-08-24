@@ -20,7 +20,12 @@ Entity::Entity()
     animIndex = 0;
     jumpVelocity = 25.f;
     hitStopFrames = 0;
+    _physicsComponent = std::make_shared<PhysicsComponent>();
+    _inputComponent = std::make_shared<InputComponent>();
+
     _stateMachine = std::make_shared<StateMachine>();
+    _stateMachine->context._inputComponent = _inputComponent;
+    _stateMachine->context._physicsComponent = _physicsComponent;
 }
 
 void Entity::HandleHitEvent(HitEvent _event)
@@ -104,14 +109,14 @@ void Entity::UpdatePhysics()
     }
 
 
-    position =  {position.x + _stateMachine->context.velocity.x, position.y + _stateMachine->context.velocity.y, position.z + _stateMachine->context.velocity.z}; //Bug where the velocity from the last state carries over to new state. Need to fix     
+    position =  {position.x + _stateMachine->context._physicsComponent->_velocity.x, position.y + _stateMachine->context._physicsComponent->_velocity.y, position.z + _stateMachine->context._physicsComponent->_velocity.z}; //Bug where the velocity from the last state carries over to new state. Need to fix     
     //Ensure that the player never goes below the "Floor" of the level. 
     if(position.y < 0)
     {
         position.y = 0;
     }
     pushBox = { Vector3{position.x - 15, position.y, position.z},Vector3{position.x + 15, position.y + 100, position.z} }; //Update the position of the push box
-    _stateMachine->context.position = position;
+    _stateMachine->context._physicsComponent->_position = position;
 }
 
 void Entity::GatherInput()
@@ -165,7 +170,7 @@ void Entity::GatherInput()
         }
 
 
-        _stateMachine->context.input = {
+        _stateMachine->context._inputComponent->inputCommand = {
                                         currentInput.up,
                                         currentInput.down,
                                         currentInput.right,

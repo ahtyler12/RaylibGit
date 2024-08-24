@@ -1,50 +1,94 @@
 #include <iostream>
 #include <functional>
 #include <vector>
+#include "Components.h"
+
  #pragma once
+/*
+    Common states that every character will eventually have. Should be the basis of 
+*/
 
+/*
+    State List:
+    -1: NULL
+     0: STANDING
+     1: CROUCH
+     2: WALKRIGHT
+     3: WALKLEFT
+     4: JUMPING
+     5: FALLING
+     6: ATTACKING
+     7: SPECIAL
+     8: REACTION
+     9: LAUNCHREACTION
+    10: GUARDREACTION
+    11: GRABREACTION
 
-struct Inputs
+*/
+
+struct StateContext //Holds infromation from the Entity that owns the state machine
+{
+    std::shared_ptr<PhysicsComponent> _physicsComponent = {};
+    std::shared_ptr<InputComponent> _inputComponent = {};
+    bool facingRight = true;
+    bool shouldDraw = false;
+
+    /*From Here the information is straight from Zinac*/
+
+    bool bTransition = false;
+    int nextState = -1;
+    /*
+
+    CharacterAction nextAction = NULL;
+    */
+    std::string nextNamedAction = "";
+    bool refTransition = false;
+    bool namedTransition = false;
+    InputData inputCommand;
+
+public:
+    void TransitionToState(int _stateID)
+    {
+        bTransition = true;
+        nextState = _stateID;
+        namedTransition = false;
+        refTransition = false;
+    }
+
+    void TransitionToStateRef(/*ActionData _actionData*/)
+    {
+        bTransition = true;
+        namedTransition = false;
+        //nextAction = _actionData;
+        refTransition = true;
+    }
+
+    void TransitionToNamedAction(std::string _nextState)
+    {
+        bTransition = true;
+        nextState = 6;
+        nextNamedAction = _nextState;
+        namedTransition = true;
+        refTransition = false;
+    }
+
+};
+
+struct Inputs /* May not need this if I just use the stuff from the input component */
 {
    bool up;
    bool down;
    bool right;
    bool left;
-};
+   bool forward;
+   bool backward;
+   bool lAttack;
+   bool mAttack;
+   bool hAttack;
+   bool grab;
 
-
-
-struct StateContext //Holds infromation from the Entity that owns the state machine
-{
-   Vector3 position = {0.f,0.f,0.f}; //Position Variable is bugged for whatever reason. the X and Y locations are in screen space instead of world space
-   Vector3 velocity = {0.f,0.f,0.f};
-   Inputs input = {0};
-   bool shouldDraw = false;
-
-   void resetXVelocity() { velocity.x = 0; }
-   void resetYVelocity() { velocity.y = 0; }
-   void resetPosition(){ position = { 0.f,0.f,0.f }; }
 
 };
-
-enum StateID : __int32
-{
-    NONE,
-    STANDING,
-    CROUCHING,
-    WALKRIGHT,
-    WALKLEFT,
-    JUMPING,
-    FALLING,
-    ATTACKING,
-    SPECIAL,
-    REACTION,
-    LAUNCHREACTION,
-    GUARDREACTION,
-    GRABREACTION
-
-};
-
 
 struct State
 {
@@ -52,12 +96,12 @@ struct State
    char name[256] = " ";
    std::vector<BoundingBox> hurtBoxes;
    bool shouldTransition = false;
-   StateID nextState = StateID::NONE;
-   virtual void OnStart(StateContext& _context) = 0; //Treat like the initialization of the state. Any resources that should be aquired are created here
-   virtual void OnUpdate(StateContext &_context) = 0;
+   int nextState = -1;
+   virtual void OnStart(StateContext& _context) = 0; 
+   virtual void OnUpdate(StateContext& _context) = 0;
    virtual void DebugDraw(StateContext _context) = 0;
-   virtual void OnExit(StateContext& _context) = 0; //Treat like the deinitialization of the state. Any resources that are aquired are destroyed here
-   virtual StateID TriggerTransition(){return StateID::NONE;};
+   virtual void OnExit(StateContext& _context) = 0; 
+   virtual int TriggerTransition(){return -1;};
 
 };
 
@@ -66,8 +110,8 @@ struct Standing : public State
 {   
       
    char name[256] = "Standing";
-
-   void OnStart(StateContext& _context) override
+    
+   void OnStart(StateContext& _context) 
    {
       std::cout << "Standing Start\n";
       hurtBoxes.push_back(BoundingBox{Vector3{25, 0, 0},Vector3{25, 50, 0}});
@@ -75,46 +119,50 @@ struct Standing : public State
       hurtBoxes.push_back(BoundingBox{Vector3{25, -100, 0},Vector3{25, 125, 0}});
    }
 
-   void OnUpdate(StateContext &_context) override
+   void OnUpdate(StateContext &_context)
    {
-      if(_context.input.up)
+      if(_context._inputComponent->inputCommand.up)
       {
-         nextState = JUMPING;
+         nextState = 4;
       }
-      else if(_context.input.down)
+      else if(_context._inputComponent->inputCommand.down)
       {
-         nextState = CROUCHING;
+         nextState = 1;
       }
-      else if (_context.input.right)
+      else if (_context._inputComponent->inputCommand.right)
       {
-          nextState = WALKRIGHT;
+          nextState = 2;
       }
-      else if (_context.input.left)
+      else if (_context._inputComponent->inputCommand.left)
       {
-          nextState = WALKLEFT;
+          nextState = 3;
+      }
+      else if (_context._inputComponent->wasInputPressedOnFrame(InputTypes::LIGHT, 20, _context.facingRight))
+      {
+          nextState = 6;
       }
       
    }
 
-   void DebugDraw(StateContext _context) override
+   void DebugDraw(StateContext _context) 
    {
 
       for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
       {
-          DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
-                            Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+          DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - i->min.x, _context._physicsComponent->_position.y - i->min.y, i->min.z},
+                            Vector3{_context._physicsComponent->_position.x + i->max.x, _context._physicsComponent->_position.y + i->max.y, i->max.z} },
               BLUE);
       }
    }
 
-   void OnExit(StateContext& _context) override
+   void OnExit(StateContext& _context) 
    {
       std::cout << "Standing Exit\n";
-      nextState = StateID::NONE;
+      nextState = -1;
       hurtBoxes.clear();
    }
 
-   StateID TriggerTransition() override
+   int TriggerTransition() 
    {
       return nextState;
    }
@@ -131,11 +179,11 @@ struct Crouch : public State
       hurtBoxes.push_back(BoundingBox{ Vector3{25, -50, 0},Vector3{25, 75, 0} });
    }
 
-   void OnUpdate(StateContext &_context) override
+   void OnUpdate(StateContext &_context) 
    {
-      if(!_context.input.down)
+      if(!_context._inputComponent->inputCommand.down)
       {
-         nextState = STANDING;
+         nextState = 0;
       }
 
    }
@@ -144,8 +192,8 @@ struct Crouch : public State
    {
        for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
        {
-           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
-                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+           DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - i->min.x, _context._physicsComponent->_position.y - i->min.y, i->min.z},
+                             Vector3{_context._physicsComponent->_position.x + i->max.x, _context._physicsComponent->_position.y + i->max.y, i->max.z} },
                BLUE);
        }
    }
@@ -153,11 +201,11 @@ struct Crouch : public State
    void OnExit(StateContext& _context)
    {
       std::cout << "Crouch Exit\n";
-      nextState = StateID::NONE;
+      nextState = -1;
       hurtBoxes.clear();
    }
 
-   StateID TriggerTransition()
+   int TriggerTransition()
    {
       return nextState;
    }
@@ -182,14 +230,14 @@ struct Jumping : public State
    {
       if(startJump)
       {
-         _context.velocity.y = initialVelocity; //Very Hacky way of doing this. Probably an easier way of doing it
+         _context._physicsComponent->_velocity.y = initialVelocity; //Very Hacky way of doing this. Probably an easier way of doing it
          startJump = false;
       }   
-      _context.velocity.y -= jumpDeceleration;   
+      _context._physicsComponent->_velocity.y -= jumpDeceleration;
 
-      if(_context.velocity.y < 0)
+      if(_context._physicsComponent->_velocity.y < 0)
       {
-         nextState = FALLING;
+         nextState = 5;
       }
       
 
@@ -199,8 +247,8 @@ struct Jumping : public State
    {
        for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
        {
-           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
-                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+           DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - i->min.x, _context._physicsComponent->_position.y - i->min.y, i->min.z},
+                             Vector3{_context._physicsComponent->_position.x + i->max.x, _context._physicsComponent->_position.y + i->max.y, i->max.z} },
                BLUE);
        }
    }
@@ -209,13 +257,11 @@ struct Jumping : public State
    {
       std::cout << "Jump Exit\n";
       startJump =  true;
-      nextState = StateID::NONE;
+      nextState = -1;
       hurtBoxes.clear();
-
-      _context.resetYVelocity();
    }
 
-   StateID TriggerTransition() override
+   int TriggerTransition() 
    {
       return nextState;
    }
@@ -233,10 +279,10 @@ struct Falling : public State
 
    void OnUpdate(StateContext &_context)
    {
-      _context.velocity.y = -8;   
-      if(_context.position.y <= 0)
+      _context._physicsComponent->_velocity.y = -8;   
+      if(_context._physicsComponent->_position.y <= 0)
       {
-         nextState = STANDING;
+         nextState = 0;
       }
 
    }
@@ -245,8 +291,8 @@ struct Falling : public State
    {
        for (auto i = hurtBoxes.begin(); i < hurtBoxes.end(); i++)
        {
-           DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - i->min.x, _context.position.y - i->min.y, i->min.z},
-                             Vector3{_context.position.x + i->max.x, _context.position.y + i->max.y, i->max.z} },
+           DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - i->min.x, _context._physicsComponent->_position.y - i->min.y, i->min.z},
+                             Vector3{_context._physicsComponent->_position.x + i->max.x, _context._physicsComponent->_position.y + i->max.y, i->max.z} },
                BLUE);
        }
    }
@@ -254,12 +300,11 @@ struct Falling : public State
    void OnExit(StateContext& _context)
    {
       std::cout << "Falling End\n";
-      nextState = StateID::NONE;
+      nextState = -1;
       hurtBoxes.clear();
-      _context.resetYVelocity();
    }
 
-   StateID TriggerTransition() override
+   int TriggerTransition() 
    {
       return nextState;
    }
@@ -278,7 +323,7 @@ struct Attack : public State
    {
       if(duration == 0)
       {
-         nextState = STANDING;
+         nextState = 0;
       }
       else
       {
@@ -296,10 +341,10 @@ struct Attack : public State
    void OnExit(StateContext& _context)
    {
       std::cout << "Attack End\n";
-      nextState = StateID::NONE;
+      nextState = -1;
    }
 
-   StateID TriggerTransition() override
+   int TriggerTransition() 
    {
       return nextState;
    }
@@ -319,7 +364,7 @@ struct ReactionState : public State
    {
       if(duration == 0)
       {
-         nextState = STANDING;
+         nextState = 0;
       }
       else
       {
@@ -337,10 +382,10 @@ struct ReactionState : public State
    void OnExit(StateContext& _context)
    {
       std::cout << "Reaction End\n";
-      nextState = StateID::NONE;
+      nextState = -1;
    }
 
-   StateID TriggerTransition() override
+   int TriggerTransition() 
    {
       return nextState;
    }
@@ -351,7 +396,7 @@ struct WalkRight : public State
 
     char name[256] = "Walk Right";
 
-    void OnStart(StateContext& _context) override
+    void OnStart(StateContext& _context) 
     {
         std::cout << "Walk Right Start\n";
         hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
@@ -360,21 +405,21 @@ struct WalkRight : public State
 
     }
 
-    void OnUpdate(StateContext& _context) override
+    void OnUpdate(StateContext& _context) 
     {
-        _context.velocity.x = 2;
-        if (!_context.input.right)
+        _context._physicsComponent->_velocity.x = 2;
+        if (!_context._inputComponent->inputCommand.right)
         {
-            nextState = STANDING;
+            nextState = 0;
             
         }
-        else if (_context.input.down)
+        else if (_context._inputComponent->inputCommand.down)
         {
-            nextState = CROUCHING;
+            nextState = 1;
         }
-        else if (_context.input.left)
+        else if (_context._inputComponent->inputCommand.left)
         {
-            nextState = WALKLEFT;
+            nextState = 3;
         }
 
     }
@@ -383,22 +428,21 @@ struct WalkRight : public State
     {
         for (auto& box : hurtBoxes)
         {
-            DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - box.min.x, _context.position.y - box.min.y, box.min.z},
-                                        Vector3{_context.position.x + box.max.x, _context.position.y + box.max.y, box.max.z} },
+            DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - box.min.x, _context._physicsComponent->_position.y - box.min.y, box.min.z},
+                                        Vector3{_context._physicsComponent->_position.x + box.max.x, _context._physicsComponent->_position.y + box.max.y, box.max.z} },
                 BLUE);
         }
 
     }
 
-    void OnExit(StateContext& _context) override
+    void OnExit(StateContext& _context) 
     {
         std::cout << "Walk Righ Exit\n";
-        nextState = StateID::NONE;
+        nextState = -1;
         hurtBoxes.clear();
-        _context.resetXVelocity();
     }
 
-    StateID TriggerTransition() override
+    int TriggerTransition() 
     {
         return nextState;
     }
@@ -409,7 +453,7 @@ struct WalkLeft : public State
 
     char name[256] = "Walk Left";
 
-    void OnStart(StateContext& _context) override
+    void OnStart(StateContext& _context) 
     {
         std::cout << "Walk Left Start\n";
         hurtBoxes.push_back(BoundingBox{ Vector3{25, 0, 0},Vector3{25, 50, 0} });
@@ -418,20 +462,20 @@ struct WalkLeft : public State
         
     }
 
-    void OnUpdate(StateContext& _context) override
+    void OnUpdate(StateContext& _context) 
     {
-        _context.velocity.x = -2;
-        if (!_context.input.left)
+        _context._physicsComponent->_velocity.x = -2;
+        if (!_context._inputComponent->inputCommand.left)
         {
-            nextState = STANDING;
+            nextState = 0;
         }
-        else if (_context.input.down)
+        else if (_context._inputComponent->inputCommand.down)
         {
-            nextState = CROUCHING;
+            nextState = 1;
         }
-        else if (_context.input.right)
+        else if (_context._inputComponent->inputCommand.right)
         {
-            nextState = WALKRIGHT;
+            nextState = 2;
         }
     }
 
@@ -439,22 +483,21 @@ struct WalkLeft : public State
     {
         for (auto& box : hurtBoxes)
         {
-            DrawBoundingBox(BoundingBox{ Vector3{_context.position.x - box.min.x, _context.position.y - box.min.y, box.min.z},
-                                        Vector3{_context.position.x + box.max.x, _context.position.y + box.max.y, box.max.z} },
+            DrawBoundingBox(BoundingBox{ Vector3{_context._physicsComponent->_position.x - box.min.x, _context._physicsComponent->_position.y - box.min.y, box.min.z},
+                                        Vector3{_context._physicsComponent->_position.x + box.max.x, _context._physicsComponent->_position.y + box.max.y, box.max.z} },
                 BLUE);
         }
 
     }
 
-    void OnExit(StateContext& _context) override
+    void OnExit(StateContext& _context) 
     {
         std::cout << "Walk Left Exit\n";
-        nextState = StateID::NONE;
+        nextState = -1;
         hurtBoxes.clear();
-        _context.resetXVelocity();
     }
 
-    StateID TriggerTransition() override
+    int TriggerTransition() 
     {
         return nextState;
     }

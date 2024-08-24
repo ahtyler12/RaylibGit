@@ -1,6 +1,6 @@
-#include "raygui.h"
-#include "GameSettings.h"
+#pragma once
 
+#include "GameSettings.h"
 
 
 enum Screen

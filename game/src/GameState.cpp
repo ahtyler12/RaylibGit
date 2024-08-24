@@ -4,7 +4,7 @@ GameState::GameState()
 {
    _gameSettings->LoadSettings();
    _playerData->LoadData();
-   _screenManager->ChangeScreen(LOGO);
+   _screenManager->ChangeScreen(MATCH);
    Run();
 }
 
